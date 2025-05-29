@@ -18,14 +18,28 @@ const App = () => {
   const handleRunCode = () => {
     try {
       if (language === "javascript") {
+        const logs = [];
+
+        const customConsole = {
+          log: (...args) => logs.push(args.join(" ")),
+        };
+
         const wrappedCode = `
         const input = \`${input}\`;
-        return (function() {
+
+        return (function(console) {
           ${code}
-        })();
+        })(customConsole);
       `;
-        const result = new Function(wrappedCode)();
-        setOutput(String(result));
+
+        const result = new Function("customConsole", wrappedCode)(
+          customConsole
+        );
+
+        const outputLog = logs.join("\n");
+        const finalOutput = result !== undefined ? `Result: ${result}` : "";
+
+        setOutput([outputLog, finalOutput].filter(Boolean).join("\n\n"));
       } else {
         setOutput(
           `Language '${language}' is not supported in frontend-only mode.`
